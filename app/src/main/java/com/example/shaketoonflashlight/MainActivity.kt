@@ -1,11 +1,13 @@
 package com.example.shaketoonflashlight
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,6 +22,8 @@ class MainActivity : ComponentActivity() {
     private var currentAcceleration = 0f
     private var lastAcceleration = 0f
 
+    val sharedPrefFile = "ToShakeOn"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -28,13 +32,11 @@ class MainActivity : ComponentActivity() {
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
-
         Objects.requireNonNull(sensorManager)!!
             .registerListener(
                 sensorListener, sensorManager!!
                     .getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL
             )
-
 
         acceleration = 10f
         currentAcceleration = SensorManager.GRAVITY_EARTH
