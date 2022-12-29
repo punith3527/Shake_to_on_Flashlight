@@ -6,7 +6,6 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
-import android.os.CountDownTimer
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -29,19 +28,13 @@ class MainActivity : ComponentActivity() {
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
-        val waitTimer: CountDownTimer = object : CountDownTimer(60000, 300) {
-            override fun onTick(millisUntilFinished: Long) {
-                Log.e("Timer",millisUntilFinished.toString())
-            }
 
-            override fun onFinish() {
-                Objects.requireNonNull(sensorManager)!!
-                    .registerListener(
-                        sensorListener, sensorManager!!
-                            .getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL
-                    )
-            }
-        }.start()
+        Objects.requireNonNull(sensorManager)!!
+            .registerListener(
+                sensorListener, sensorManager!!
+                    .getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL
+            )
+
 
         acceleration = 10f
         currentAcceleration = SensorManager.GRAVITY_EARTH
@@ -65,8 +58,8 @@ class MainActivity : ComponentActivity() {
 
             // acceleration value is over 20
             if (acceleration > 18) {
-                    OnButtonPressed().onButtonClick(context = applicationContext)
-                    Log.e("shake","detected")
+                OnButtonPressed().onButtonClick(context = applicationContext)
+                Log.e("shake", "detected")
             }
         }
 
