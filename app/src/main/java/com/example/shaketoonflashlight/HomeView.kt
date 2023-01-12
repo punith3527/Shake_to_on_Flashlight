@@ -55,7 +55,7 @@ fun MainView() {
 fun Button(modifier: Modifier) {
     val context = LocalContext.current
     Image(
-        painter = painterResource(id = R.drawable.on),
+        painter = painterResource(id = R.drawable.flashlight_icon),
         contentDescription = stringResource(id = R.string.on_switch),
         modifier = modifier.clickable {
             OnButtonPressed().onButtonClick(context)
