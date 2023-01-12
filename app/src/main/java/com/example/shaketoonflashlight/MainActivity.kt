@@ -16,9 +16,9 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var lastTime: Long = 0
     private var shakeCount = 0
-    private var lastX : Float = 0f
-    private var lastY : Float = 0f
-    private var lastZ : Float = 0f
+    private var lastX: Float = 0f
+    private var lastY: Float = 0f
+    private var lastZ: Float = 0f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,7 +49,11 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                 if (speed > SHAKE_THRESHOLD) {
                     shakeCount++
                     if (shakeCount == 3) {
-                        OnButtonPressed().onButtonClick(context = applicationContext)
+                        val prefs =
+                            applicationContext.getSharedPreferences("prefs", Context.MODE_PRIVATE)
+                        if (prefs.getBoolean("switch_state", false)) {
+                            OnButtonPressed().onButtonClick(context = applicationContext)
+                        }
                         shakeCount = 0
                     }
                 }
@@ -61,7 +65,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         }
     }
 
-    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) { }
+    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
 
     override fun onResume() {
         sensorManager.registerListener(

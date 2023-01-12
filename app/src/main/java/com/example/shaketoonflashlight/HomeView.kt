@@ -66,18 +66,16 @@ fun Button(modifier: Modifier) {
 @Composable
 fun ToShakeOn(modifier: Modifier) {
     val context = LocalContext.current
-    val sharedPreferences: SharedPreferences = context.getSharedPreferences(MainActivity().sharedPrefFile,Context.MODE_PRIVATE)
-    val editor: SharedPreferences.Editor =  sharedPreferences.edit()
-    val checkedState = remember { mutableStateOf(false) }
+    val prefs = context.getSharedPreferences("prefs",Context.MODE_PRIVATE)
+    val switchState = remember { mutableStateOf(prefs.getBoolean("switch_state", false)) }
 
     Switch(
-        checked = checkedState.value,
-        onCheckedChange = { checkedState.value = !checkedState.value },
-        modifier = modifier.clickable {
-            editor.putBoolean("ToShakeOn", checkedState.value)
-            editor.apply()
-            Log.e("Shared",sharedPreferences.getBoolean("ToShakeOn",false).toString())
-        }
+        checked = switchState.value,
+        onCheckedChange = {
+            switchState.value = it
+            prefs.edit().putBoolean("switch_state", it).apply()
+        },
+        modifier = modifier
     )
 }
 
