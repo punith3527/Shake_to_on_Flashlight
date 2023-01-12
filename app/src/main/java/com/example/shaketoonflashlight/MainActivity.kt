@@ -6,19 +6,19 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import java.util.*
-import kotlin.math.sqrt
+import kotlin.math.abs
 
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), SensorEventListener {
 
-    private var sensorManager: SensorManager? = null
-    private var acceleration = 0f
-    private var currentAcceleration = 0f
-    private var lastAcceleration = 0f
+    private lateinit var sensorManager: SensorManager
+    private var lastTime: Long = 0
+    private var shakeCount = 0
+    private var lastX : Float = 0f
+    private var lastY : Float = 0f
+    private var lastZ : Float = 0f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,56 +27,58 @@ class MainActivity : ComponentActivity() {
         }
 
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-
-
-        Objects.requireNonNull(sensorManager)!!
-            .registerListener(
-                sensorListener, sensorManager!!
-                    .getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL
-            )
-
-
-        acceleration = 10f
-        currentAcceleration = SensorManager.GRAVITY_EARTH
-        lastAcceleration = SensorManager.GRAVITY_EARTH
+        sensorManager.registerListener(
+            this,
+            sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
     }
 
-    private val sensorListener: SensorEventListener = object : SensorEventListener {
-        override fun onSensorChanged(event: SensorEvent) {
+    override fun onSensorChanged(event: SensorEvent) {
+        if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+            val curTime = System.currentTimeMillis()
+            if (curTime - lastTime > 100) {
+                val diffTime = curTime - lastTime
 
-            // Fetching x,y,z values
-            val x = event.values[0]
-            val y = event.values[1]
-            val z = event.values[2]
-            lastAcceleration = currentAcceleration
+                val x = event.values[0]
+                val y = event.values[1]
+                val z = event.values[2]
 
-            // Getting current accelerations
-            // with the help of fetched x,y,z values
-            currentAcceleration = sqrt((x * x + y * y + z * z).toDouble()).toFloat()
-            val delta: Float = currentAcceleration - lastAcceleration
-            acceleration = acceleration * 0.9f + delta
+                val speed = abs(x + y + z - lastX - lastY - lastZ) / diffTime * 10000
 
-            // acceleration value is over 20
-            if (acceleration > 18) {
-                OnButtonPressed().onButtonClick(context = applicationContext)
-                Log.e("shake", "detected")
+                if (speed > SHAKE_THRESHOLD) {
+                    shakeCount++
+                    if (shakeCount == 3) {
+                        OnButtonPressed().onButtonClick(context = applicationContext)
+                        shakeCount = 0
+                    }
+                }
+                lastX = x
+                lastY = y
+                lastZ = z
+                lastTime = curTime
             }
         }
-
-        override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
     }
 
+    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) { }
+
     override fun onResume() {
-        sensorManager?.registerListener(
-            sensorListener, sensorManager!!.getDefaultSensor(
+        sensorManager.registerListener(
+            this, sensorManager.getDefaultSensor(
                 Sensor.TYPE_ACCELEROMETER
             ), SensorManager.SENSOR_DELAY_NORMAL
         )
         super.onResume()
     }
 
+
     override fun onPause() {
-        sensorManager!!.unregisterListener(sensorListener)
+        sensorManager.unregisterListener(this)
         super.onPause()
+    }
+
+    companion object {
+        private const val SHAKE_THRESHOLD = 800
     }
 }
